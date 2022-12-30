@@ -7,20 +7,22 @@
 #define DB_PORT 3306
 #define DB_NAME "rayit"
 
+enum
+{
+    COL_FirstName = 0,
+    COL_LastName = 1,
+    NUM_COLS = 2
+} ;
+
 int count = 0;
 GtkWidget *txt;
+
+MYSQL_RES *res;
+MYSQL_ROW row;
 
 void end_program(GtkWidget *wid, gpointer ptr)
 {
     gtk_main_quit();
-}
-
-void count_button(GtkWidget* wid, gpointer ptr)
-{
-    char buffer[30];
-    count++;
-    sprintf(buffer, "Button pressed %d times", count);
-    gtk_label_set_text(GTK_LABEL(ptr), buffer);
 }
 
 void save_button(GtkWidget* wid, gpointer ptr)
@@ -30,10 +32,13 @@ void save_button(GtkWidget* wid, gpointer ptr)
     {
         gtk_label_set_text(ptr, "Connection success");
         char q[1000];
-        sprintf(q, "INSERT INTO Persons (LastName) VALUES (\"Marx\");" );
+        sprintf(q, "INSERT INTO Persons (FirstName, LastName) VALUES (\"%s\", \"%s\");", gtk_entry_get_text(txt),  gtk_entry_get_text(txt) );
         if(mysql_query(conn, q) != 0)
         {
             gtk_label_set_text(ptr, mysql_error(conn));
+        } else {
+            gtk_label_set_text(ptr, "Saved");
+            gtk_entry_set_text(txt, "");
         }
     } else {
         gtk_label_set_text(ptr, mysql_error(conn));
@@ -41,16 +46,92 @@ void save_button(GtkWidget* wid, gpointer ptr)
     mysql_close(conn);
 }
 
-void copy_text (GtkWidget* wid, gpointer ptr)
+void query(GtkWidget* wid, gpointer ptr)
 {
-    const char* input = gtk_entry_get_text(GTK_ENTRY(txt));
-    gtk_label_set_text(GTK_LABEL(ptr), input);
+    MYSQL* conn = mysql_init(NULL);
+    if (mysql_real_connect(conn, DB_HOST, DB_USER, DB_PWD, DB_NAME, DB_PORT, NULL, 0))
+    {
+        char q[1000];
+        sprintf(q, "SELECT * FROM Persons;" );
+
+        mysql_query(conn, q);
+        res = mysql_store_result(conn);
+
+        while ( row = mysql_fetch_row(res))
+        {
+           printf(" %s  %s  %s \n", row[0], row[1], row[2]);
+        }
+        mysql_free_result(res);
+    }
+    mysql_close(conn);
+}
+
+static GtkTreeModel* create_and_fill_model(void)
+{
+    GtkListStore *store = gtk_list_store_new(NUM_COLS,
+                                             G_TYPE_STRING,
+                                             G_TYPE_STRING);
+    /* Append a row and fill in some data */
+    GtkTreeIter iter;
+    gtk_list_store_append (store, &iter);
+    gtk_list_store_set (store, &iter,
+                        COL_FirstName, "Raymond",
+                        COL_LastName, "Marx",
+                        -1);
+    gtk_list_store_append (store, &iter);
+    gtk_list_store_set (store, &iter,
+                        COL_FirstName, "Nicole",
+                        COL_LastName, "Marx",
+                        -1);
+
+    return GTK_TREE_MODEL (store);
+}
+
+static GtkWidget* create_view_and_model (void)
+{
+    GtkWidget *view = gtk_tree_view_new();
+
+    GtkCellRenderer  *renderer;
+    // Column #1
+    renderer = gtk_cell_renderer_text_new();
+    gtk_tree_view_insert_column_with_attributes(
+            GTK_TREE_VIEW (view),
+            0,
+            "FirstName",
+            renderer,
+            "text",
+            COL_FirstName,
+            NULL
+            );
+    // Column #2
+    renderer = gtk_cell_renderer_text_new();
+    gtk_tree_view_insert_column_with_attributes(
+            GTK_TREE_VIEW(view),
+            1,
+            "LastName",
+            renderer,
+            "text",
+            COL_LastName,
+            NULL
+            );
+
+    GtkTreeModel *model = create_and_fill_model ();
+
+    gtk_tree_view_set_model (GTK_TREE_VIEW (view), model);
+
+    /* The tree view has acquired its own reference to the
+     *  model, so we can drop ours. That way the model will
+     *  be freed automatically when the tree view is destroyed
+     */
+    g_object_unref (model);
+
+    return view;
 }
 
 int main(int argc, char *argv[]) {
     printf("Hello, World!\n");
 
-    // USING Glade
+// USING Glade (for FUTURE)
 //    gtk_init (&argc, &argv);
 //    GtkBuilder *builder = gtk_builder_new_from_file (
 //            "layout.glade");
@@ -64,31 +145,35 @@ int main(int argc, char *argv[]) {
 
     gtk_init (&argc, &argv);
     GtkWidget *win = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-    GtkWidget *btn = gtk_button_new_with_label ("Close window");
-    g_signal_connect(btn, "clicked", G_CALLBACK(end_program), NULL);
     g_signal_connect(win, "delete_event", G_CALLBACK(end_program), NULL);
 
     // Add label
-    GtkWidget *lbl = gtk_label_new("My label");
+    GtkWidget *lbl = gtk_label_new("Last name:");
+    GtkWidget *lblStatus = gtk_label_new("");
 
-    // Btn2
-    GtkWidget *btn2 = gtk_button_new_with_label("Count button");
-    g_signal_connect(btn2, "clicked", G_CALLBACK(count_button), lbl);
+    // Btn1
+    GtkWidget *btnSave = gtk_button_new_with_label("SAVE");
+    g_signal_connect(btnSave, "clicked", G_CALLBACK(save_button), lblStatus);
 
-    // Btn3
-    GtkWidget *btn3 = gtk_button_new_with_label("SAVE button");
-    g_signal_connect(btn3, "clicked", G_CALLBACK(save_button), lbl);
+    // Btn1
+    GtkWidget *btnQuery = gtk_button_new_with_label("Query");
+    g_signal_connect(btnQuery, "clicked", G_CALLBACK(query), lblStatus);
 
     // input
     txt = gtk_entry_new();
 
+    // GridView
+    GtkWidget *view = create_view_and_model();
+
     // Grid
     GtkWidget *grd = gtk_grid_new();
     gtk_grid_attach(GTK_GRID(grd), lbl, 0, 0, 1, 1);
-    gtk_grid_attach(GTK_GRID(grd), btn, 1, 0, 1,1);
-    gtk_grid_attach(GTK_GRID(grd), btn2, 0, 1, 1, 1);
-    gtk_grid_attach(GTK_GRID(grd), btn3, 0, 2, 1, 1);
-    gtk_grid_attach(GTK_GRID(grd), txt, 1,1,1,1);
+    gtk_grid_attach(GTK_GRID(grd), txt, 2,0,2,1);
+    gtk_grid_attach(GTK_GRID(grd), btnSave, 0, 1, 2,1);
+    gtk_grid_attach(GTK_GRID(grd), btnQuery, 2, 1, 1,1);
+    gtk_grid_attach(GTK_GRID(grd), lblStatus, 0, 2, 3, 1);
+    gtk_grid_attach(GTK_GRID(grd), view, 0, 3, 3, 1);
+
     gtk_container_add(GTK_CONTAINER(win), grd);
     gtk_widget_show_all (win);
     gtk_main ();

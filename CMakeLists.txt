@@ -1,5 +1,5 @@
 # Set the name and the supported language of the project
-project(test C)
+project(inventory C)
 # Set the minimum version of cmake required to build this project
 cmake_minimum_required(VERSION 3.2)
 
@@ -23,8 +23,8 @@ link_directories(${GTK3_LIBRARY_DIRS})
 add_definitions(${GTK3_CFLAGS_OTHER})
 
 # Add an executable compiled from hello.c
-add_executable(test main.c)
+add_executable(inventory main.c)
 # Link the target to the GTK+ libraries
-target_link_libraries(test
+target_link_libraries(inventory
         ${GTK3_LIBRARIES}
         PkgConfig::mariadb)
