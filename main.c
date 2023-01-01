@@ -14,7 +14,8 @@ enum
     NUM_COLS = 2
 } ;
 
-int count = 0;
+GtkWidget *view;
+GtkTreeModel *model;
 GtkWidget *txt;
 
 MYSQL_RES *res;
@@ -51,19 +52,35 @@ void query(GtkWidget* wid, gpointer ptr)
     MYSQL* conn = mysql_init(NULL);
     if (mysql_real_connect(conn, DB_HOST, DB_USER, DB_PWD, DB_NAME, DB_PORT, NULL, 0))
     {
+        // get tree view (to clear it)
+        model = gtk_tree_view_get_model(GTK_TREE_VIEW(view));
+        g_object_ref(model); /* Make sure the model stays with us after the tree view unrefs it */
+        gtk_tree_view_set_model(GTK_TREE_VIEW(view), NULL); /* Detach model from view */
         char q[1000];
         sprintf(q, "SELECT * FROM Persons;" );
 
         mysql_query(conn, q);
         res = mysql_store_result(conn);
+        GtkListStore *store = gtk_list_store_new(NUM_COLS,
+                                                 G_TYPE_STRING,
+                                                 G_TYPE_STRING);
 
         while ( row = mysql_fetch_row(res))
         {
            printf(" %s  %s  %s \n", row[0], row[1], row[2]);
+            GtkTreeIter iter;
+            gtk_list_store_append (store, &iter);
+            gtk_list_store_set (store, &iter,
+                                COL_FirstName, row[1],
+                                COL_LastName, row[2],
+                                -1);
         }
         mysql_free_result(res);
+        gtk_tree_view_set_model(GTK_TREE_VIEW(view), store); /* Re-attach model to view */
+        g_object_unref(store);
     }
     mysql_close(conn);
+
 }
 
 static GtkTreeModel* create_and_fill_model(void)
@@ -89,7 +106,7 @@ static GtkTreeModel* create_and_fill_model(void)
 
 static GtkWidget* create_view_and_model (void)
 {
-    GtkWidget *view = gtk_tree_view_new();
+    view = gtk_tree_view_new();
 
     GtkCellRenderer  *renderer;
     // Column #1
@@ -115,7 +132,7 @@ static GtkWidget* create_view_and_model (void)
             NULL
             );
 
-    GtkTreeModel *model = create_and_fill_model ();
+    model = create_and_fill_model ();
 
     gtk_tree_view_set_model (GTK_TREE_VIEW (view), model);
 
@@ -163,7 +180,7 @@ int main(int argc, char *argv[]) {
     txt = gtk_entry_new();
 
     // GridView
-    GtkWidget *view = create_view_and_model();
+    view = create_view_and_model();
 
     // Grid
     GtkWidget *grd = gtk_grid_new();
