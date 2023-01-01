@@ -190,6 +190,14 @@ int main(int argc, char *argv[]) {
 
     // Grid
     GtkWidget *grd = gtk_grid_new();
+
+    gtk_widget_compute_expand(grd, GTK_ORIENTATION_HORIZONTAL);
+    gtk_widget_set_margin_top(grd, 30);
+    gtk_widget_set_margin_start(grd, 30);
+    gtk_widget_set_margin_end(grd, 30);
+    gtk_widget_set_margin_bottom(grd, 30);
+    gtk_grid_set_column_spacing(grd, 5);
+    gtk_grid_set_row_spacing(grd, 5);
     gtk_widget_set_hexpand (txtFirstName, TRUE);
     gtk_widget_set_hexpand (txtLastName, TRUE);
 
