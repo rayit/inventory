@@ -70,6 +70,7 @@ void query(GtkWidget* wid, gpointer ptr)
 
         while ( row = mysql_fetch_row(res))
         {
+            g_print("%s\t%s\t%s\n",row[0], row[1], row[2]);
             GtkTreeIter iter;
             gtk_list_store_append (store, &iter);
             gtk_list_store_set (store, &iter,
