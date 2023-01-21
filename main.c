@@ -1,5 +1,5 @@
 #include <gtk/gtk.h>
-#include <mariadb/mysql.h>
+#include <mysql/mysql.h>
 
 #define DB_HOST "localhost"
 #define DB_USER "root"
