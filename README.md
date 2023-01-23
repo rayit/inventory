@@ -41,3 +41,6 @@ CREATE TABLE `Persons` (
 ```bash
 cc `pkg-config --cflags gtk+-3.0 libmariadb` main.c -o inventory `pkg-config --libs gtk+-3.0 libmariadb`
 ```
+
+## Cmake
+> TODO

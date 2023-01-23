@@ -1,6 +1,8 @@
 #include <gtk/gtk.h>
 #include <mysql/mysql.h>
 
+#include "funcy.h"
+
 #define DB_HOST "localhost"
 #define DB_USER "root"
 #define DB_PWD "rayrayray"
@@ -150,6 +152,8 @@ static GtkWidget* create_view_and_model (void)
 
 int main(int argc, char *argv[]) {
     printf("Hello, World!\n");
+    int t = add(4, 4);
+    printf("total %d\n", t); 
 
 // USING Glade (for FUTURE)
 //    gtk_init (&argc, &argv);
