@@ -30,3 +30,24 @@ Build for gtk (manually)
 ```bash
 cc `pkg-config --cflags gtk+-3.0` gtk.c -o hello `pkg-config --libs gtk+-3.0`
 ```
+
+
+### Windows build
+
+> msys2
+
+> TODO look into:
+
+```bash
+pacman -S mingw-w64-ucrt-x86_64-gcc
+pacman -S mingw-w64-x86_64-gtk3
+pacman -S mingw-w64-x86_64-toolchain base-devel
+pacman -S mingw-w64-x86_64-toolchain base-devel
+pacman -S pkg-config
+pacman -S clang64/mingw-w64-clang-x86_64-gtkmm3  clang64/mingw-w64-clang-x86_64-wxwidgets3.2-gtk3-libs clang32/mingw-w64-clang-i686-wxwidgets3.2-gtk3-libs  clang32/mingw-w64-clang-i686-gtkmm3
+pacman -S clang64/mingw-w64-clang-x86_64-libmariadbclient  ucrt64/mingw-w64-ucrt-x86_64-libmariadbclient
+```
+
+```bash
+cc `pkg-config --cflags gtk+-3.0` `mariadb_config.exe --cflags`    main.c -o hello `pkg-config.exe --libs gtk+-3.0` `mariadb_config.exe --libs`
+```

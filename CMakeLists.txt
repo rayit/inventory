@@ -11,8 +11,7 @@ pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
 file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/layout.glade
         DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 
-# find_package(MySQL REQUIRED)
-pkg_check_modules(mariadb REQUIRED IMPORTED_TARGET "mysqlclient")
+pkg_check_modules(mysql REQUIRED mariadbclient)
 
 # Setup CMake to use GTK+, tell the compiler where to look for headers
 # and to the linker where to look for libraries
@@ -27,4 +26,4 @@ add_executable(inventory main.c)
 # Link the target to the GTK+ libraries
 target_link_libraries(inventory
         ${GTK3_LIBRARIES}
-        PkgConfig::mariadb)
+	PkgConfig::mysql)
