@@ -1,11 +1,12 @@
 #include <gtk/gtk.h>
-#include <mysql.h>
+#include <mysql/mysql.h>
+#include "Model/person.h"
 
 #define DB_HOST "localhost"
 #define DB_USER "root"
 #define DB_PWD "rayrayray"
 #define DB_PORT 3306
-#define DB_NAME "rayit"
+#define DB_NAME "inventory"
 
 enum
 {
@@ -29,25 +30,12 @@ void end_program(GtkWidget *wid, gpointer ptr)
 
 void save_button(GtkWidget* wid, gpointer ptr)
 {
-    MYSQL* conn = mysql_init(NULL);
-    if (mysql_real_connect(conn, DB_HOST, DB_USER, DB_PWD, DB_NAME, DB_PORT, NULL, 0))
-    {
-        gtk_label_set_text(ptr, "Connection success");
-        char q[1000];
-        sprintf(q, "INSERT INTO Persons (FirstName, LastName) VALUES (\"%s\", \"%s\");", gtk_entry_get_text(txtFirstName),  gtk_entry_get_text(txtLastName) );
-        // gtk_label_set_text(ptr, q);
-        if(mysql_query(conn, q) != 0)
-        {
-            gtk_label_set_text(ptr, mysql_error(conn));
-        } else {
-            gtk_label_set_text(ptr, "Saved");
-            gtk_entry_set_text(txtLastName, "");
-            gtk_entry_set_text(txtFirstName, "");
-        }
-    } else {
-        gtk_label_set_text(ptr, mysql_error(conn));
-    }
-    mysql_close(conn);
+    // Use person Model to insert a Person
+    char *r = insertPerson(gtk_entry_get_text(txtFirstName), gtk_entry_get_text(txtLastName));
+    gtk_label_set_text(ptr, r);
+    // Clear form
+    gtk_entry_set_text(txtLastName, "");
+    gtk_entry_set_text(txtFirstName, "");
 }
 
 void query(GtkWidget* wid, gpointer ptr)
