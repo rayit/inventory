@@ -8,20 +8,10 @@
 #define DB_PORT 3306
 #define DB_NAME "inventory"
 
-enum
-{
-    COL_FirstName = 0,
-    COL_LastName = 1,
-    NUM_COLS = 2
-} ;
-
 GtkWidget *view;
 GtkTreeModel *model;
 GtkWidget *txtLastName;
 GtkWidget *txtFirstName;
-
-MYSQL_RES *res;
-MYSQL_ROW row;
 
 void end_program(GtkWidget *wid, gpointer ptr)
 {
@@ -40,38 +30,10 @@ void save_button(GtkWidget* wid, gpointer ptr)
 
 void query(GtkWidget* wid, gpointer ptr)
 {
-    MYSQL* conn = mysql_init(NULL);
-    if (mysql_real_connect(conn, DB_HOST, DB_USER, DB_PWD, DB_NAME, DB_PORT, NULL, 0))
-    {
-        // get tree view (to clear it)
-        model = gtk_tree_view_get_model(GTK_TREE_VIEW(view));
-        g_object_ref(model); /* Make sure the model stays with us after the tree view unrefs it */
-        gtk_tree_view_set_model(GTK_TREE_VIEW(view), NULL); /* Detach model from view */
-        char q[1000];
-        sprintf(q, "SELECT PersonID, FirstName, LastName FROM Persons;" );
-
-        mysql_query(conn, q);
-        res = mysql_store_result(conn);
-        GtkListStore *store = gtk_list_store_new(NUM_COLS,
-                                                 G_TYPE_STRING,
-                                                 G_TYPE_STRING);
-
-        while ( row = mysql_fetch_row(res))
-        {
-            g_print("%s\t%s\t%s\n",row[0], row[1], row[2]);
-            GtkTreeIter iter;
-            gtk_list_store_append (store, &iter);
-            gtk_list_store_set (store, &iter,
-                                COL_FirstName, row[1],
-                                COL_LastName, row[2],
-                                -1);
-        }
-        mysql_free_result(res);
-        gtk_tree_view_set_model(GTK_TREE_VIEW(view), store); /* Re-attach model to view */
-        g_object_unref(store);
-    }
-    mysql_close(conn);
-
+    GtkListStore *store = queryPerson();
+    model = gtk_tree_view_get_model(GTK_TREE_VIEW(view));
+    g_object_ref(model); // Make sure the model stays with us after the tree view unrefs it 
+    gtk_tree_view_set_model(GTK_TREE_VIEW(view), store); // Re-attach model to view 
 }
 
 static GtkTreeModel* create_and_fill_model(void)
@@ -137,8 +99,6 @@ static GtkWidget* create_view_and_model (void)
 }
 
 int main(int argc, char *argv[]) {
-    printf("Hello, World!\n");
-
 // USING Glade (for FUTURE)
 //    gtk_init (&argc, &argv);
 //    GtkBuilder *builder = gtk_builder_new_from_file (

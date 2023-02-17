@@ -3,3 +3,4 @@
 
 char* insertPerson(GtkWidget* FirstName, GtkWidget* LastName);
 
+GtkWidget* queryPerson();
