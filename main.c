@@ -13,6 +13,14 @@ GtkTreeModel *model;
 GtkWidget *txtLastName;
 GtkWidget *txtFirstName;
 
+enum
+{
+    COL_FirstName = 0,
+    COL_LastName = 1,
+    NUM_COLS = 2
+} ;
+
+
 void end_program(GtkWidget *wid, gpointer ptr)
 {
     gtk_main_quit();
